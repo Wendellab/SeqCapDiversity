@@ -1,0 +1,6 @@
+module load samtools/0.1.19
+module load samtools/1.2
+module load bambam/1.3
+
+./SeqCapMap.runfile SeqCapMap.infile
+bam2consensus -g Dgenome2_13.gene.gff *.[AD].bam
