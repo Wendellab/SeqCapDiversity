@@ -1,0 +1,34 @@
+# Corrinne Grover, April 2016
+# takes a control file and runs gsnap --> --> polyCat, split on white space. The fields are:
+# se or pe analysis; the path to the first file; the path to the second file (if paired-end seq); the snp index NUMBER ONLY; the basename of the sample (e.g. AD1_Maxxa or AD2_K101); and the number of procs to use
+# an example below
+
+# pe    /path/to/pefile1a    /path/to/pefile2a    4.0    basename    20
+
+# Start real process
+
+cat $1 | while read line; do
+    array=($line)
+    if [ "${array[0]}" = "pe" ]
+    then
+        echo "Processing ${array[4]}. Results are written to ${array[4]}.log"
+        echo "Begin log" >> ${array[4]}.log
+        echo >> ${array[4]}.log
+        echo "Begin gsnap pe" >> ${array[4]}.log
+        echo >> ${array[4]}.log
+        nice -n 18 gsnap --gunzip -n 1 -Q -t 29 --use-sarray=0 -D /home/corrinne/D5/snpindex${array[3]}/ -d D5 -v D5snp${array[3]} -A sam ${array[1]} ${array[2]} > ${array[4]}.sam 2>> ${array[4]}.log
+        echo "Begin samtools transformations" >> ${array[4]}.log
+        samtools view -Sb -@ ${array[5]} ${array[4]}.sam -o ${array[4]}.bam 2>> ${array[4]}.log
+        samtools sort -@ ${array[5]} ${array[4]}.bam ${array[4]}.sort 2>> ${array[4]}.log
+        samtools index ${array[4]}.sort.bam
+        echo >> ${array[4]}.log
+        echo "Begin polyCat" >> ${array[4]}.log
+        polyCat -p 1 -x 1 -s /home/corrinne/D5/snpindex${array[3]}/D13.snp${array[3]} ${array[4]}.sort.bam &>> ${array[4]}.log
+    elif [ "${array[0]}" = "se" ]
+    then
+        echo "We aren't doing SE for this project"
+    else
+        echo "Please check your control file"
+    fi
+	
+done
