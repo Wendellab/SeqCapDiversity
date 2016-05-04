@@ -1,4 +1,5 @@
 #!/bin/python
+## Corrinne Grover, May 2016
 
 import numpy as np
 import sys
